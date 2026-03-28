@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      list_spots: {
+        Row: {
+          id: string
+          list_id: string
+          sort_order: number
+          spot_id: string
+        }
+        Insert: {
+          id?: string
+          list_id: string
+          sort_order?: number
+          spot_id: string
+        }
+        Update: {
+          id?: string
+          list_id?: string
+          sort_order?: number
+          spot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_spots_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "list_spots_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lists: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      spot_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number
+          spot_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number
+          spot_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+          spot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spot_images_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spots: {
+        Row: {
+          category: string
+          created_at: string
+          featured: boolean
+          how_to_reach: string
+          id: string
+          location: string
+          popular: boolean
+          short_desc: string
+          slug: string
+          tips: string
+          title: string
+          updated_at: string
+          what_to_see: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          featured?: boolean
+          how_to_reach?: string
+          id?: string
+          location?: string
+          popular?: boolean
+          short_desc?: string
+          slug: string
+          tips?: string
+          title: string
+          updated_at?: string
+          what_to_see?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          featured?: boolean
+          how_to_reach?: string
+          id?: string
+          location?: string
+          popular?: boolean
+          short_desc?: string
+          slug?: string
+          tips?: string
+          title?: string
+          updated_at?: string
+          what_to_see?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
