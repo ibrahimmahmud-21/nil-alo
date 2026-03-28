@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import heroImage from "@/assets/hero-beach.jpg";
-import { spots, lists } from "@/data/spots";
+import { fetchSpots, fetchLists, type DbSpot } from "@/lib/supabase-helpers";
+import { spots as staticSpots, lists as staticLists } from "@/data/spots";
 import SpotCard from "@/components/SpotCard";
 
 const Index = () => {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+
+  const { data: dbSpots } = useQuery({
+    queryKey: ["public-spots"],
+    queryFn: fetchSpots,
+  });
+
+  const { data: dbLists } = useQuery({
+    queryKey: ["public-lists"],
+    queryFn: fetchLists,
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,9 +28,29 @@ const Index = () => {
     }
   };
 
-  const featuredSpots = spots.filter((s) => s.featured).slice(0, 6);
-  const popularSpots = spots.filter((s) => s.popular).slice(0, 4);
-  const latestLists = lists.slice(0, 3);
+  // Use DB data if available, fallback to static
+  const hasDbSpots = dbSpots && dbSpots.length > 0;
+  const hasDbLists = dbLists && dbLists.length > 0;
+
+  const featuredSpots = hasDbSpots
+    ? dbSpots.filter((s) => s.featured).slice(0, 6)
+    : staticSpots.filter((s) => s.featured).slice(0, 6);
+
+  const popularSpots = hasDbSpots
+    ? dbSpots.filter((s) => s.popular).slice(0, 4)
+    : staticSpots.filter((s) => s.popular).slice(0, 4);
+
+  const latestLists = hasDbLists
+    ? dbLists.slice(0, 3)
+    : staticLists.slice(0, 3);
+
+  const spotToCard = (spot: any) => ({
+    slug: spot.slug,
+    title: spot.title,
+    shortDesc: spot.short_desc || spot.shortDesc || "",
+    image: spot.images?.[0]?.image_url || spot.image || "",
+    category: spot.category,
+  });
 
   return (
     <div>
@@ -56,8 +88,8 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold mb-8">বিশেষ জায়গা</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredSpots.map((spot) => (
-            <SpotCard key={spot.slug} spot={spot} />
+          {featuredSpots.map((spot: any) => (
+            <SpotCard key={spot.slug} spot={spotToCard(spot)} />
           ))}
         </div>
       </section>
@@ -67,8 +99,8 @@ const Index = () => {
         <div className="container mx-auto px-4 py-16">
           <h2 className="text-2xl font-bold mb-8">জনপ্রিয় স্পট</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularSpots.map((spot) => (
-              <SpotCard key={spot.slug} spot={spot} />
+            {popularSpots.map((spot: any) => (
+              <SpotCard key={spot.slug} spot={spotToCard(spot)} />
             ))}
           </div>
         </div>
@@ -78,7 +110,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold mb-8">সাম্প্রতিক তালিকা</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {latestLists.map((list) => (
+          {latestLists.map((list: any) => (
             <Link
               key={list.slug}
               to={`/list/${list.slug}`}
@@ -87,7 +119,7 @@ const Index = () => {
               <h3 className="text-lg font-semibold text-card-foreground">{list.title}</h3>
               <p className="text-sm text-muted-foreground mt-2">{list.description}</p>
               <span className="text-sm text-primary mt-3 inline-block">
-                {list.spotSlugs.length}টি জায়গা →
+                {list.spots?.length || list.spotSlugs?.length || 0}টি জায়গা →
               </span>
             </Link>
           ))}
